@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Generator</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+
+        td {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #000;
+            text-align: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        td:nth-child(3n){
+            border-right: 3px solid #000;
+        }
+        tr:nth-child(3n) td{
+            border-bottom: 3px solid #000;
+        }
+        tr:first-child td{
+            border-top: 3px solid #000;
+        }
+        td:first-child{
+            border-left: 3px solid #000;
+        }
+
+        input {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        button {
+            margin-top: 20px;
+            font-size: 16px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        function createSudoku() {
+            function pattern(y, x) {
+                return (3 * (y % 3) + Math.floor(y / 3) + x) % 9;
+            }
+
+            function shuffle(s) {
+                return s.sort(() => Math.random() - 0.5);
+            }
+
+            const listY = shuffle([...Array(3).keys()].flatMap(i => shuffle([...Array(3).keys()].map(y => i * 3 + y))));
+            const listX = shuffle([...Array(3).keys()].flatMap(j => shuffle([...Array(3).keys()].map(x => j * 3 + x))));
+            const nums = shuffle([...Array(9).keys()].map(i => i + 1));
+
+            const sudoku = listX.map(x => listY.map(y => nums[pattern(x, y)]));
+
+            return sudoku;
+        }
+
+        function promptSudoku(sudoku) {
+            const dif = 60;
+            const sudokuGame = JSON.parse(JSON.stringify(sudoku));
+
+            const choice = Array.from({ length: dif }, () => Math.floor(Math.random() * 81));
+            choice.forEach(x => {
+                sudokuGame[Math.floor(x / 9)][x % 9] = 0;
+            });
+            return sudokuGame;
+        }
+
+        function renderSudoku(sudoku) {
+            const table = document.createElement('table');
+
+            for (let i = 0; i < 9; i++) {
+                const row = document.createElement('tr');
+                for (let j = 0; j < 9; j++) {
+                    const cell = document.createElement('td');
+                    cell.textContent = sudoku[i][j] !== 0 ? sudoku[i][j].toString() : '';
+                    row.appendChild(cell);
+                }
+                table.appendChild(row);
+            }
+
+            document.body.appendChild(table);
+        }
+
+        function clearSudoku() {
+            // Clear the previous Sudoku puzzle
+            const existingTable = document.querySelector('table');
+            if (existingTable) {
+                existingTable.remove();
+            }
+        }
+
+        function generateAndRenderSudoku() {
+            clearSudoku();
+
+            const sudokuGame = createSudoku();
+            const promptedSudoku = promptSudoku(sudokuGame);
+            renderSudoku(promptedSudoku);
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            generateAndRenderSudoku();
+        });
+    </script>
+
+    <button onclick="generateAndRenderSudoku()">Generate New Sudoku</button>
+</body> 
+</html>
